@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Ulusal Kurtuluş Yolu| Yönetim Paneli</title>
+    <title>Ulusal Kurtuluş Yolu | Yönetim Paneli</title>
     <style>
         * {
             margin: 0;
@@ -30,7 +30,7 @@
             border-bottom: 1px solid #FFD96655;
             flex-wrap: wrap;
         }
-        .admin-btn {
+        .admin-btn, .user-btn {
             background: #FFD96622;
             border: 1px solid #FFD966;
             color: #FFD966;
@@ -39,9 +39,15 @@
             cursor: pointer;
             font-weight: bold;
         }
-        .admin-btn:hover {
+        .admin-btn:hover, .user-btn:hover {
             background: #FFD966;
             color: #0a2f5a;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
         }
         .dashboard {
             display: flex;
@@ -107,7 +113,7 @@
         .main-content {
             flex: 1;
             padding: 2rem;
-            overflow-y: visible;  /* Değişiklik: max-height kalktı, overflow auto yerine visible */
+            overflow-y: visible;
         }
         .content-card {
             background: rgba(6, 50, 86, 0.7);
@@ -156,27 +162,38 @@
             border-radius: 20px;
             padding: 2rem;
             width: 90%;
-            max-width: 700px;
+            max-width: 500px;
             max-height: 80vh;
             overflow-y: auto;
         }
-        .modal-content textarea {
+        .modal-content input, .modal-content select {
             width: 100%;
-            min-height: 300px;
-            background: #fff3dd;
-            border-radius: 16px;
-            padding: 12px;
-            font-family: monospace;
-        }
-        button {
-            background: #FFD966;
-            color: #0a2f5a;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 20px;
             border: none;
-            padding: 8px 16px;
+            background: #fff3dd;
+        }
+        .modal-content button {
+            margin-top: 10px;
+            width: 100%;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: #FFD96633;
+            border: none;
+            padding: 6px;
             border-radius: 30px;
             cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
+        }
+        .tab-btn.active {
+            background: #FFD966;
+            color: #0a2f5a;
         }
         .paket-grid {
             display: flex;
@@ -202,6 +219,8 @@
 <body>
 
 <div class="top-bar">
+    <div id="userDisplayArea" class="user-info"></div>
+    <button class="user-btn" id="userLoginBtn">👤 Üye Girişi</button>
     <div id="adminStatus">👤 Ziyaretçi</div>
     <button class="admin-btn" id="adminLoginBtn">🔐 Yönetici Girişi</button>
 </div>
@@ -210,7 +229,7 @@
     <div class="sidebar">
         <div class="logo-area">
             <h2>⚡ MİLLİ UYANIŞ & ULUSAL KURTULUŞ</h2>
-            <p>Kurtuluş · Örgütlenme ·Ortak Yaşam Planı</p>
+            <p>Kurtuluş · Örgütlenme · Ortak Yaşam Planı</p>
             <p style="font-size:0.7rem;">12 maddeyle diriliş</p>
         </div>
         <div id="modulListesi" class="modul-listesi"></div>
@@ -232,22 +251,162 @@
 </footer>
 
 <script>
-    // ----- HER MODÜL 12 MADDE İÇERECEK ŞEKİLDE VARSAYILANLAR (Aynı, değişmedi) -----
+    // ======================= KULLANICI SİSTEMİ =======================
+    let currentUser = null; // { ad, soyad, memleket, email }
+
+    function loadUsers() {
+        let users = localStorage.getItem("kurtulus_users");
+        if(!users) {
+            // Örnek kullanıcı ekle (isteğe bağlı)
+            localStorage.setItem("kurtulus_users", JSON.stringify([]));
+        }
+    }
+
+    function saveUsers(users) {
+        localStorage.setItem("kurtulus_users", JSON.stringify(users));
+    }
+
+    function registerUser(ad, soyad, memleket, email, sifre) {
+        let users = JSON.parse(localStorage.getItem("kurtulus_users") || "[]");
+        if(users.find(u => u.email === email)) return false;
+        users.push({ ad, soyad, memleket, email, sifre });
+        saveUsers(users);
+        return true;
+    }
+
+    function loginUser(email, sifre) {
+        let users = JSON.parse(localStorage.getItem("kurtulus_users") || "[]");
+        let user = users.find(u => u.email === email && u.sifre === sifre);
+        if(user) {
+            currentUser = user;
+            sessionStorage.setItem("kurtulus_current_user", JSON.stringify({ ad: user.ad, soyad: user.soyad, memleket: user.memleket, email: user.email }));
+            updateUserUI();
+            return true;
+        }
+        return false;
+    }
+
+    function logoutUser() {
+        currentUser = null;
+        sessionStorage.removeItem("kurtulus_current_user");
+        updateUserUI();
+    }
+
+    function updateUserUI() {
+        const area = document.getElementById("userDisplayArea");
+        const loginBtn = document.getElementById("userLoginBtn");
+        if(currentUser) {
+            area.innerHTML = `<span>👋 ${currentUser.ad} ${currentUser.soyad} (${currentUser.memleket})</span> <button class="user-btn" id="userLogoutBtn">Çıkış</button>`;
+            loginBtn.style.display = "none";
+            document.getElementById("userLogoutBtn").onclick = () => logoutUser();
+        } else {
+            area.innerHTML = "";
+            loginBtn.style.display = "inline-block";
+        }
+    }
+
+    // Kullanıcı giriş modal'ı
+    function showUserModal() {
+        const modalDiv = document.createElement("div");
+        modalDiv.className = "modal";
+        modalDiv.innerHTML = `
+            <div class="modal-content">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="login">Giriş Yap</button>
+                    <button class="tab-btn" data-tab="register">Kayıt Ol</button>
+                </div>
+                <div id="loginForm" style="display:block;">
+                    <input type="email" id="loginEmail" placeholder="E-posta" required>
+                    <input type="password" id="loginPassword" placeholder="Şifre" required>
+                    <button id="doLogin">Giriş</button>
+                </div>
+                <div id="registerForm" style="display:none;">
+                    <input type="text" id="regAd" placeholder="Ad">
+                    <input type="text" id="regSoyad" placeholder="Soyad">
+                    <input type="text" id="regMemleket" placeholder="Memleket">
+                    <input type="email" id="regEmail" placeholder="E-posta">
+                    <input type="password" id="regPassword" placeholder="Şifre">
+                    <button id="doRegister">Kayıt Ol</button>
+                </div>
+                <button id="closeModal">Kapat</button>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        
+        const tabBtns = modalDiv.querySelectorAll(".tab-btn");
+        const loginDiv = modalDiv.querySelector("#loginForm");
+        const registerDiv = modalDiv.querySelector("#registerForm");
+        tabBtns.forEach(btn => {
+            btn.onclick = () => {
+                tabBtns.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                if(btn.getAttribute("data-tab") === "login") {
+                    loginDiv.style.display = "block";
+                    registerDiv.style.display = "none";
+                } else {
+                    loginDiv.style.display = "none";
+                    registerDiv.style.display = "block";
+                }
+            };
+        });
+        
+        modalDiv.querySelector("#doLogin").onclick = () => {
+            const email = modalDiv.querySelector("#loginEmail").value;
+            const pwd = modalDiv.querySelector("#loginPassword").value;
+            if(loginUser(email, pwd)) {
+                modalDiv.remove();
+                alert("Giriş başarılı!");
+            } else {
+                alert("E-posta veya şifre hatalı!");
+            }
+        };
+        modalDiv.querySelector("#doRegister").onclick = () => {
+            const ad = modalDiv.querySelector("#regAd").value;
+            const soyad = modalDiv.querySelector("#regSoyad").value;
+            const memleket = modalDiv.querySelector("#regMemleket").value;
+            const email = modalDiv.querySelector("#regEmail").value;
+            const pwd = modalDiv.querySelector("#regPassword").value;
+            if(!ad || !soyad || !memleket || !email || !pwd) {
+                alert("Tüm alanları doldurun!");
+                return;
+            }
+            if(registerUser(ad, soyad, memleket, email, pwd)) {
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                modalDiv.querySelector("#loginEmail").value = email;
+                modalDiv.querySelector("#loginPassword").value = pwd;
+                tabBtns[0].click();
+            } else {
+                alert("Bu e-posta zaten kayıtlı!");
+            }
+        };
+        modalDiv.querySelector("#closeModal").onclick = () => modalDiv.remove();
+    }
+    
+    // Oturum açık mı kontrol et
+    const storedUser = sessionStorage.getItem("kurtulus_current_user");
+    if(storedUser) {
+        currentUser = JSON.parse(storedUser);
+        updateUserUI();
+    }
+    loadUsers();
+    document.getElementById("userLoginBtn").onclick = showUserModal;
+    
+    // ======================= MEVCUT MANİFESTO SİSTEMİ (Aynen korundu) =======================
     const defaultModules = {
         "giris": {
             baslik: "🏠 GİRİŞ & KURTULUŞ İLKELERİ",
             icerik: `<h1>12 KURTULUŞ İLKESİ</h1><ol><li>Korku hipnozunu kıracağız.</li><li>Yalnız olmadığımızı bileceğiz.</li><li>Adalet için birleşeceğiz.</li><li>Şeffaflık temel hak olacak.</li><li>Liyakat her şeyin üstünde.</li><li>Üreten kazanacak, rantiyeler tarihe karışacak.</li><li>Mahalle meclisleri kurulacak.</li><li>Dijital direniş ağları örülecek.</li><li>Şiddetsiz mücadele tek yoldur.</li><li>Gençler, İş bulacak, evlenip çocuk yapabilecek.</li><li>Emekliler refah içinde yaşayacak.</li><li>Bu manifesto bir berat, bir diriliş fermanıdır.</li></ol><div class="highlight">“Su damlaları birleşir sel olur. Adalet çığlıkları birleşir kanun olur.”</div>`
         },
         "teshis": {
-            baslik: "🔍 1. BÜYÜK TEŞHİS",
+            baslik: "🔍 1. BÜYÜK TEŞHİS & TEDAVİ",
             icerik: `<h1>12 ÇÖKÜŞ NEDENİ</h1><ol><li>Enflasyon bir kader değil, tercihtir.</li><li>Kamu vakıfları denetimsiz, israf, yolsuzluk kanalıdır.</li><li>Vergiler yatırıma değil, lükse akıyor.</li><li>Torpil liyakati öldürdü, gençler kaçıyor.</li><li>Demografik intihar: evlilikler ve doğumlar dibe vurdu.</li><li>%30 oy oranıyla meşruiyet kalmamıştır.</li><li>Hantal zihniyet, üniversiteleri işgal etti.</li><li>Aracılar köylüyü soyarak zenginleşiyor.</li><li>Holdingler fiyat dikte ediyor.</li><li>Bürokrasi korkuyla yönetiliyor.</li><li>Medya tekelleşmiş, gerçekler saklanıyor.</li><li>Halkın mutfağındaki çaresizlik, düzenin mezar kazıcısıdır.</li></ol>`
         },
         "degerler": {
             baslik: "🕊️ 2. ORTAK EVRENSEL DEĞERLER",
-            icerik: `<h1>12 DEĞER MADDESİ</h1><ol><li>Mutlak Adalet</li><li>Şeffaflık</li><li>Hakkaniyet</li><li>Emeğin Kutsallığı</li><li>Liyakat</li><li>Dayanışma</li><li>Özgürlük</li><li>Eşitlik</li><li>Merhamet</li><li>Cesaret</li><li>Sorumluluk</li><li>Ortak Gelecek Vizyonu & Yaşam bilinci</li></ol><div class="highlight">“Bu değerler ne dinsel ne etnik, sadece insanîdir.”</div>`
+            icerik: `<h1>12 DEĞER MADDESİ</h1><ol><li>Mutlak Adalet</li><li>Şeffaflık</li><li>Hakkaniyet</li><li>Emeğin Kutsallığı</li><li>Liyakat</li><li>Dayanışma</li><li>Özgürlük</li><li>Eşitlik</li><li>Merhamet</li><li>Cesaret</li><li>Sorumluluk</li><li>Ortak Gelecek Vizyonu & Yaşam bilinci</li></ol><div class="highlight">“Bu değerler ne dinsel, ne de etnik, sadece evrensel ve insanîdir.”</div>`
         },
         "ekip": {
-            baslik: "⚙️ 3. ERDEMLİ EKİP",
+            baslik: "⚙️ 3. ERDEMLİ/LİYAKETLİ EKİP",
             icerik: `<h1>12 ERDEMLİ EKİP TAHSİSİ</h1><ol><li>Makam hırsı olmayanlar</li><li>Şahsi ikbal gütmeyenler</li><li>Vatansever akademisyenler</li><li>Emekli hakim ve savcılar</li><li>Gençlik konseyleri temsilcileri</li><li>Esnaf birlikleri önderleri</li><li>Köylü sendikaları liderleri</li><li>Dijital hak aktivistleri</li><li>Sendikaların vicdanlı kanadı</li><li>STK'ların deneyimli isimleri</li><li>Mevcut partilerin vatansever milletvekilleri</li><li>Koordinasyon kurulu, hiyerarşisiz ağ ile çalışır</li></ol>`
         },
         "catlak": {
@@ -260,7 +419,7 @@
         },
         "donusum": {
             baslik: "🏛️ 6. YÖNETİMDE YAPISAL DÖNÜŞÜM",
-            icerik: `<h1>12 DÖNÜŞÜM ADIMI</h1><ol><li>Tepeden inme piramit ters çevrilecek; tabandan seçim ve karar, uygulama yönetim kurulundan</li><li>Köylü Odaları: aracısız satış</li><li>Esnaf Meclisleri: faizsiz kredi havuzları</li><li>Gençlik Teknoloji Odaları: blockchain liyakat</li><li>Üretici verileri anlık dashboard'da şeffaf</li><li>Kamu bankaları faizsiz mikro kredi sunacak</li><li>Kooperatif lojistik ağları kurulacak</li><li>Her mahallede dijital oylama sistemi</li><li>Merkezi hükümet sadece koordinasyon yapacak</li><li>Yerel meclisler bütçeyi doğrudan yönetecek</li><li>Yolsuzluk blockchain ile izlenecek</li><li>Yeni anayasa, toplumsal sözleşme halk oylamasıyla kabul edilecek</li></ol>`
+            icerik: `<h1>12 DÖNÜŞÜM ADIMI</h1><ol><li>Tepeden inme piramit ters çevrilecek; tabandan seçim ve karar, uygulama; yönetim kurulundan</li><li>Köylü Odaları: aracısız satış</li><li>Esnaf Meclisleri: faizsiz kredi havuzları</li><li>Gençlik Teknoloji Odaları: blockchain liyakat</li><li>Üretici verileri anlık dashboard'da şeffaf</li><li>Kamu bankaları faizsiz mikro kredi sunacak</li><li>Kooperatif lojistik ağları kurulacak</li><li>Her mahallede dijital oylama sistemi</li><li>Merkezi hükümet sadece koordinasyon yapacak</li><li>Yerel meclisler bütçeyi doğrudan yönetecek</li><li>Yolsuzluk blockchain ile izlenecek</li><li>Yeni anayasa, toplumsal sözleşme halk oylamasıyla kabul edilecek</li></ol>`
         },
         "ai": {
             baslik: "🤖 7.YAPAY ZEKA ASİSTANI",
@@ -272,7 +431,7 @@
         },
         "abonelik": {
             baslik: "📦 9.ABONELİK PAKETLERİ (12 SEÇENEK)",
-            icerik: `<h1>12 AYLIK DESTEK PAKETLERİ</h1><div class="paket-grid" id="paketGrid"></div><p>Her paket WhatsApp üzerinden satın alınabilir. Tüm gelir dayanışma fonuna aktarılır.</p>`
+            icerik: `<h1>12 AYLIK DESTEK PAKETLERİ</h1><div class="paket-grid" id="paketGrid"></div><p>Her paket WhatsApp üzerinden satın alınabilir. Tüm gelir dayanışma fonuna aktarılır. Ulusal uyanış ve kurtuluş için harcanır.</p>`
         },
         "duyurular": {
             baslik: "📢 10.DUYURU PANOSU (12 KATEGORİ)",
