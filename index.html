@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Ulusal Kurtuluş | 12 Maddelik Yönetim Paneli</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a2f5a;
+            font-family: 'Segoe UI', 'Roboto', 'Corbel', 'Trebuchet MS', sans-serif;
+            color: #FFD966;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background-color: #04273f;
+            padding: 0.7rem 2rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #FFD96655;
+            flex-wrap: wrap;
+        }
+        .admin-btn {
+            background: #FFD96622;
+            border: 1px solid #FFD966;
+            color: #FFD966;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .admin-btn:hover {
+            background: #FFD966;
+            color: #0a2f5a;
+        }
+        .dashboard {
+            display: flex;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #063256;
+            border-right: 1px solid #FFD966;
+            padding: 1rem 0 2rem 0;
+            overflow-y: auto;
+        }
+        .logo-area {
+            text-align: center;
+            padding: 0 1rem 1rem 1rem;
+            border-bottom: 1px solid rgba(255, 217, 102, 0.3);
+            margin-bottom: 1rem;
+        }
+        .modul-listesi {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .modul-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-right: 0.5rem;
+        }
+        .modul-btn {
+            background: transparent;
+            border: none;
+            text-align: left;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #FFD966;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 4px solid transparent;
+            font-family: inherit;
+            flex: 1;
+        }
+        .modul-btn.active {
+            background-color: #0e4270;
+            border-left-color: #FFD966;
+        }
+        .admin-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            color: #FFD966;
+            cursor: pointer;
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+        .edit-btn:hover, .delete-btn:hover { opacity: 1; }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .content-card {
+            background: rgba(6, 50, 86, 0.7);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid #FFD96655;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .content-card h1 { font-size: 1.8rem; border-bottom: 2px solid #FFD966; display: inline-block; margin-bottom: 1rem; }
+        .content-card ol, .content-card ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+        .content-card li { margin: 0.5rem 0; line-height: 1.4; }
+        .highlight {
+            background: #FFD96620;
+            border-left: 4px solid #FFD966;
+            padding: 0.8rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+        .footer {
+            background-color: #04273f;
+            border-top: 1px solid #FFD96655;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .footer a {
+            color: #FFD966;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000000aa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #0a2f5a;
+            border: 2px solid #FFD966;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content textarea {
+            width: 100%;
+            min-height: 300px;
+            background: #fff3dd;
+            border-radius: 16px;
+            padding: 12px;
+            font-family: monospace;
+        }
+        button {
+            background: #FFD966;
+            color: #0a2f5a;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .paket-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .paket-card {
+            background: #0a2f5a;
+            border: 1px solid #FFD966;
+            border-radius: 20px;
+            padding: 1rem;
+            width: 200px;
+            text-align: center;
+        }
+        .wa-buton { background: #25D366; color: black; margin-top: 8px; }
+        @media (max-width: 780px) {
+            .dashboard { flex-direction: column; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div id="adminStatus">👤 Ziyaretçi</div>
+    <button class="admin-btn" id="adminLoginBtn">🔐 Yönetici Girişi</button>
+</div>
+
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="logo-area">
+            <h2>⚡ MİLLİ UYANIŞ</h2>
+            <p>Kurtuluş · Örgütlenme · Yaşam Planı</p>
+            <p style="font-size:0.7rem;">12 maddeyle diriliş</p>
+        </div>
+        <div id="modulListesi" class="modul-listesi"></div>
+        <div id="yeniModulAlan" style="padding: 1rem; display: none; border-top: 1px solid #FFD96655; margin-top: 1rem;">
+            <input type="text" id="yeniModulAd" placeholder="Yeni modül adı" style="width:100%; padding:6px; border-radius:20px; margin-bottom:8px;">
+            <button id="yeniModulKaydet" style="width:100%">➕ Yeni Modül Ekle</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="content-card">Yükleniyor...</div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>✦ <strong>SİSTEM KURUCU: CFO Müh. Orhan Boyraz</strong> ✦</p>
+    <p>Adres: Nilüfer/Bursa | Tel: <a href="tel:05409666602">0540 966 6602</a> | Web: <a href="https://anadolunetwork.tr/" target="_blank">https://anadolunetwork.tr/</a></p>
+    <p>“Mahallende örgütlen, komşuna ‘yalnız değilsin’ de.”</p>
+</footer>
+
+<script>
+    // ----- HER MODÜL 12 MADDE İÇERECEK ŞEKİLDE VARSAYILANLAR -----
+    const defaultModules = {
+        "giris": {
+            baslik: "🏠 GİRİŞ & KURTULUŞ İLKELERİ",
+            icerik: `<h1>12 KURTULUŞ İLKESİ</h1><ol><li>Korku hipnozunu kıracağız.</li><li>Yalnız olmadığımızı bileceğiz.</li><li>Adalet için birleşeceğiz.</li><li>Şeffaflık temel hak olacak.</li><li>Liyakat her şeyin üstünde.</li><li>Üreten kazanacak, rantiyeler tarihe karışacak.</li><li>Mahalle meclisleri kurulacak.</li><li>Dijital direniş ağları örülecek.</li><li>Şiddetsiz mücadele tek yoldur.</li><li>Gençler evlenip çocuk yapabilecek.</li><li>Emekliler refah içinde yaşayacak.</li><li>Bu manifesto bir berat, bir diriliş fermanıdır.</li></ol><div class="highlight">“Su damlaları birleşir sel olur. Adalet çığlıkları birleşir kanun olur.”</div>`
+        },
+        "teshis": {
+            baslik: "🔍 1. BÜYÜK TEŞHİS",
+            icerik: `<h1>12 ÇÖKÜŞ NEDENİ</h1><ol><li>Enflasyon bir kader değil, tercihtir.</li><li>Kamu vakıfları denetimsiz, israf kanalıdır.</li><li>Vergiler yatırıma değil, lükse akıyor.</li><li>Torpil liyakati öldürdü, gençler kaçıyor.</li><li>Demografik intihar: evlilikler ve doğumlar dibe vurdu.</li><li>%30 oy oranıyla meşruiyet kalmamıştır.</li><li>Hantal zihniyet, üniversiteleri işgal etti.</li><li>Aracılar köylüyü soyarak zenginleşiyor.</li><li>Holdingler fiyat dikte ediyor.</li><li>Bürokrasi korkuyla yönetiliyor.</li><li>Medya tekelleşmiş, gerçekler saklanıyor.</li><li>Halkın mutfağındaki çaresizlik, düzenin mezar kazıcısıdır.</li></ol>`
+        },
+        "degerler": {
+            baslik: "🕊️ 2. ORTAK EVRENSEL DEĞERLER",
+            icerik: `<h1>12 DEĞER MADDESİ</h1><ol><li>Mutlak Adalet</li><li>Şeffaflık</li><li>Hakkaniyet</li><li>Emeğin Kutsallığı</li><li>Liyakat</li><li>Dayanışma</li><li>Özgürlük</li><li>Eşitlik</li><li>Merhamet</li><li>Cesaret</li><li>Sorumluluk</li><li>Gelecek nesillere borç bilinci</li></ol><div class="highlight">“Bu değerler ne dinsel ne etnik, sadece insanîdir.”</div>`
+        },
+        "ekip": {
+            baslik: "⚙️ 3. ERDEMLİ EKİP",
+            icerik: `<h1>12 ERDEMLİ EKİP TAHSİSİ</h1><ol><li>Makam hırsı olmayanlar</li><li>Şahsi ikbal gütmeyenler</li><li>Vatansever akademisyenler</li><li>Emekli hakim ve savcılar</li><li>Gençlik konseyleri temsilcileri</li><li>Esnaf birlikleri önderleri</li><li>Köylü sendikaları liderleri</li><li>Dijital hak aktivistleri</li><li>Sendikaların vicdanlı kanadı</li><li>STK'ların deneyimli isimleri</li><li>Mevcut partilerin vatansever milletvekilleri</li><li>Koordinasyon kurulu, hiyerarşisiz ağ ile çalışır</li></ol>`
+        },
+        "catlak": {
+            baslik: "🌿 4. ÖRGÜTLENME & ÇATLAK",
+            icerik: `<h1>12 ÖRGÜTLENME STRATEJİSİ</h1><ol><li>Mahalle Dayanışma Hücreleri (10-15 kişi)</li><li>Dijital şifreli iletişim ağları (Signal, Matrix)</li><li>Ekonomik takas havuzları</li><li>Köylü-üretici kooperatifleri</li><li>Esnaf faizsiz mikro-kredi sistemi</li><li>Gençlik blockchain liyakat kaydı</li><li>Bürokrasideki rasyonel unsurlara güvence verme</li><li>İktidar içindeki rahatsız elitleri ayrıştırma</li><li>Legal ve diplomatik temas hatları</li><li>Emekli dernekleriyle aktif işbirliği</li><li>İlerici sendikalarla ortak eylem planları</li><li>Merkez kaç kuvveti ile sistemin çözülmesi</li></ol>`
+        },
+        "soylem": {
+            baslik: "📢 5. SÖYLEM & SOSYAL MEDYA",
+            icerik: `<h1>12 DİJİNAL DİRENİŞ AKSİYONU</h1><ol><li>Vergi takip platforması</li><li>İsrafın fotoğraflarla ifşası</li><li>Kamusal lüks boykot listeleri</li><li>Evraka dayalı kitlesel yürüyüşler</li><li>Merkezi Dijital Dashboard</li><li>Kısa video serisi “1 Dakikada Gerçek”</li><li>Günlük infografik ordusu</li><li>Eşzamanlı hashtag fırtınaları (#ŞeffaflıkŞart)</li><li>Sansür delme protokolü (5 platformda eşzamanlı)</li><li>VPN ve merkeziyetsiz sosyal ağ altyapısı</li><li>Provokasyonsuz, şiddetsiz disiplin</li><li>Algoritmayı tersine mühendislik ile aşma</li></ol>`
+        },
+        "donusum": {
+            baslik: "🏛️ 6. YAPISAL DÖNÜŞÜM",
+            icerik: `<h1>12 DÖNÜŞÜM ADIMI</h1><ol><li>Tepeden inme piramit ters çevrilecek</li><li>Köylü Odaları: aracısız satış</li><li>Esnaf Meclisleri: faizsiz kredi havuzları</li><li>Gençlik Teknoloji Odaları: blockchain liyakat</li><li>Üretici verileri anlık dashboard'da şeffaf</li><li>Kamu bankaları faizsiz mikro kredi sunacak</li><li>Kooperatif lojistik ağları kurulacak</li><li>Her mahallede dijital oylama sistemi</li><li>Merkezi hükümet sadece koordinasyon yapacak</li><li>Yerel meclisler bütçeyi doğrudan yönetecek</li><li>Yolsuzluk blockchain ile izlenecek</li><li>Yeni anayasa, halk oylamasıyla kabul edilecek</li></ol>`
+        },
+        "ai": {
+            baslik: "🤖 YAPAY ZEKA ASİSTANI",
+            icerik: `<h1>12 SORU / 12 CEVAP</h1><ol><li><strong>Enflasyon neden çözülmüyor?</strong> – İsraf ve rant düzeni yüzünden. Yeni sistem üretici odalarıyla fiyatları denetleyecek.</li><li><strong>Torpil nasıl bitecek?</strong> – Blockchain liyakat puanı ile her atama şeffaf.</li><li><strong>Nasıl örgütlenebilirim?</strong> – Mahalle hücresi kur, komşularınla takas havuzu oluştur.</li><li><strong>Korkuyorum, ne yapmalıyım?</strong> – Yalnız olmadığını bil. Manifestoyu oku, bir kişiye anlat.</li><li><strong>Gençler neden evlenmiyor?</strong> – Gelecek güvencesi yok. Liyakat sistemi ve mikro kredilerle evlilik teşvik edilecek.</li><li><strong>Emekliler ne kazanacak?</strong> – Refah içinde yaşama hakkı, sağlık ve sosyal destek.</li><li><strong>Köylü nasıl kurtulacak?</strong> – Köylü Odaları aracıları kaldıracak, ürün fiyatını kendisi belirleyecek.</li><li><strong>Esnaf nasıl ayakta kalacak?</strong> – Faizsiz mikro kredi havuzları ve dayanışma takas ağları.</li><li><strong>Şiddetsiz direniş işe yarar mı?</strong> – Tarihte birçok örnek var. Vergi takibi ve ifşa baskıyı eritir.</li><li><strong>Yeni piramit nedir?</strong> – Tepedekiler hizmetkâr, tabandaki üreticiler sahiptir.</li><li><strong>Dijital dashboard ne işe yarar?</strong> – Anlık veri akışı, şeffaflık ve organize olma merkezi.</li><li><strong>Bu manifestoyu kim hazırladı?</strong> – Milletin vicdanı, matematik ve gelecek bilimi. Sen de katkı sunabilirsin.</li></ol><div><textarea id="aiSoru" rows="2" placeholder="Kendi sorunuzu yazın..." style="width:100%"></textarea><button id="aiSorBtn">Asistan'a Sor</button><div id="aiCevap" class="highlight"></div></div>`
+        },
+        "fon": {
+            baslik: "💰 DAYANIŞMA VE KALKINMA FONU",
+            icerik: `<h1>12 FON KULLANIM İLKESİ</h1><ol><li>Halkın kendi kaynağını yaratması</li><li>Mikro kredi faizsiz dağıtılır</li><li>Acil yardım ve iaşe desteği</li><li>Köylüye tohum ve ekipman</li><li>Esnafa düşük maliyetli finansman</li><li>Genç girişimcilere hibe</li><li>Deprem, sel gibi afetlerde anında müdahale</li><li>Eğitim ve dijital okuryazarlık kursları</li><li>Kadın kooperatiflerine destek</li><li>Engelli bireyler için fon ayrılması</li><li>Fon kullanımı blockchain ile şeffaf</li><li>Her bağışçı, fonun harcandığı yeri görebilir</li></ol><div id="fonTutar" style="font-size:2rem; font-weight:bold; margin:1rem 0;">0 TL</div><button data-miktar="10">10 TL Bağış</button><button data-miktar="50">50 TL Bağış</button><button data-miktar="100">100 TL Bağış</button><button data-miktar="250">250 TL Bağış</button>`
+        },
+        "abonelik": {
+            baslik: "📦 ABONELİK PAKETLERİ (12 SEÇENEK)",
+            icerik: `<h1>12 AYLIK DESTEK PAKETLERİ</h1><div class="paket-grid" id="paketGrid"></div><p>Her paket WhatsApp üzerinden satın alınabilir. Tüm gelir dayanışma fonuna aktarılır.</p>`
+        },
+        "duyurular": {
+            baslik: "📢 DUYURU PANOSU (12 KATEGORİ)",
+            icerik: `<h1>12 DUYURU BAŞLIĞI</h1><div id="duyuruListesi">Duyurular yükleniyor...</div><div id="adminDuyuruPanel" style="display:none; margin-top:2rem;"><input type="text" id="duyuruBaslik" placeholder="Duyuru başlığı" style="width:100%; margin-bottom:8px;"><textarea id="duyuruIcerik" rows="2" placeholder="Duyuru içeriği"></textarea><button id="duyuruEkle">Duyuru Ekle</button><div id="duyuruSilListe" style="margin-top:1rem;"></div></div>`
+        }
+    };
+
+    // Diğer tüm mekanizmalar aynı (localStorage, admin, ekle/sil/düzenle)
+    let modules = {};
+    let adminLogged = false;
+    let activeModuleId = "giris";
+
+    function loadModules() {
+        const stored = localStorage.getItem("kurtulus_editor_modules");
+        if(stored) {
+            modules = JSON.parse(stored);
+        } else {
+            modules = JSON.parse(JSON.stringify(defaultModules));
+            saveModules();
+        }
+    }
+    function saveModules() {
+        localStorage.setItem("kurtulus_editor_modules", JSON.stringify(modules));
+    }
+
+    function renderSidebar() {
+        const container = document.getElementById("modulListesi");
+        if(!container) return;
+        container.innerHTML = "";
+        for(let [id, mod] of Object.entries(modules)) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "modul-item";
+            const btn = document.createElement("button");
+            btn.className = "modul-btn" + (activeModuleId === id ? " active" : "");
+            btn.innerText = mod.baslik || id;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                setActiveModule(id);
+            };
+            wrapper.appendChild(btn);
+            if(adminLogged) {
+                const controls = document.createElement("div");
+                controls.className = "admin-controls";
+                const editBtn = document.createElement("button");
+                editBtn.innerHTML = "✏️";
+                editBtn.className = "edit-btn";
+                editBtn.title = "Düzenle (içerik ve başlık)";
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openEditor(id);
+                };
+                const delBtn = document.createElement("button");
+                delBtn.innerHTML = "🗑️";
+                delBtn.className = "delete-btn";
+                delBtn.title = "Sil";
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if(confirm("Bu modülü silmek istediğinize emin misiniz?")) {
+                        delete modules[id];
+                        saveModules();
+                        if(activeModuleId === id) {
+                            const firstId = Object.keys(modules)[0];
+                            if(firstId) setActiveModule(firstId);
+                            else setActiveModule(null);
+                        }
+                        renderSidebar();
+                        if(activeModuleId && modules[activeModuleId]) renderContent(activeModuleId);
+                        else document.getElementById("mainContent").innerHTML = `<div class="content-card"><h1>Modül yok</h1><p>Yeni modül ekleyin.</p></div>`;
+                    }
+                };
+                controls.appendChild(editBtn);
+                controls.appendChild(delBtn);
+                wrapper.appendChild(controls);
+            }
+            container.appendChild(wrapper);
+        }
+    }
+
+    function openEditor(moduleId) {
+        const mod = modules[moduleId];
+        if(!mod) return;
+        const newContent = prompt("Modül içeriğini HTML formatında düzenleyin (12 madde veya istediğiniz gibi):", mod.icerik);
+        if(newContent !== null) {
+            mod.icerik = newContent;
+            saveModules();
+            if(activeModuleId === moduleId) renderContent(moduleId);
+        }
+        const newTitle = prompt("Modül başlığını düzenleyin:", mod.baslik);
+        if(newTitle !== null) {
+            mod.baslik = newTitle;
+            saveModules();
+            renderSidebar();
+        }
+    }
+
+    function renderContent(moduleId) {
+        const container = document.getElementById("mainContent");
+        const mod = modules[moduleId];
+        if(!mod) { container.innerHTML = `<div class="content-card">Modül bulunamadı.</div>`; return; }
+        let html = `<div class="content-card">${mod.icerik}</div>`;
+        container.innerHTML = html;
+        
+        // Dinamik bileşenler
+        if(moduleId === "ai") {
+            const sorBtn = document.getElementById("aiSorBtn");
+            if(sorBtn) sorBtn.onclick = () => {
+                const soru = document.getElementById("aiSoru").value;
+                let cevap = "Manifestoya göre: Örgütlen ve umutlu ol. 12 madde arasında cevabını araştır.";
+                if(soru.includes("enflasyon")) cevap = "Enflasyon israf ve yolsuzluktan kaynaklanır. Yeni piramit sistem çözecek (Madde 1).";
+                else if(soru.includes("torpil")) cevap = "Liyakat blockchain ile tescil edilecek (Madde 5).";
+                else cevap = "Dervişane adalet ve stratejik birlikle kazanacağız. Tüm 12 madde rehberinizdir.";
+                document.getElementById("aiCevap").innerHTML = cevap;
+            };
+        }
+        if(moduleId === "fon") {
+            let toplam = localStorage.getItem("dayanisma_fonu") ? parseInt(localStorage.getItem("dayanisma_fonu")) : 28500;
+            const fonDiv = document.getElementById("fonTutar");
+            if(fonDiv) fonDiv.innerText = toplam.toLocaleString() + " TL";
+            document.querySelectorAll("[data-miktar]").forEach(btn => {
+                btn.onclick = () => {
+                    let miktar = parseInt(btn.getAttribute("data-miktar"));
+                    let yeni = (parseInt(localStorage.getItem("dayanisma_fonu"))||28500) + miktar;
+                    localStorage.setItem("dayanisma_fonu", yeni);
+                    if(fonDiv) fonDiv.innerText = yeni.toLocaleString() + " TL";
+                    alert(`${miktar} TL bağış için teşekkürler! Dayanışma fonu güçleniyor.`);
+                };
+            });
+        }
+        if(moduleId === "abonelik") {
+            // 12 paket oluştur
+            const paketler = [];
+            for(let i=1; i<=12; i++) {
+                let fiyat = i*50;
+                paketler.push({ ad: `Paket ${i}`, fiyat: `${fiyat} TL/ay`, aciklama: `${i}. ay özel destek` });
+            }
+            const grid = document.getElementById("paketGrid");
+            if(grid) {
+                grid.innerHTML = "";
+                paketler.forEach(p => {
+                    const kart = document.createElement("div");
+                    kart.className = "paket-card";
+                    kart.innerHTML = `<strong>${p.ad}</strong><div>${p.fiyat}</div><button class="wa-buton" data-paket="${p.ad}">WhatsApp Satın Al</button>`;
+                    grid.appendChild(kart);
+                });
+                document.querySelectorAll(".wa-buton").forEach(btn => {
+                    btn.onclick = () => window.open(`https://wa.me/905409666602?text=${encodeURIComponent(btn.getAttribute("data-paket") + " paketi satın almak istiyorum. Adres: Nilüfer/Bursa")}`, "_blank");
+                });
+            }
+        }
+        if(moduleId === "duyurular") {
+            renderDuyuruModulu();
+            if(adminLogged) {
+                const adminPanel = document.getElementById("adminDuyuruPanel");
+                if(adminPanel) adminPanel.style.display = "block";
+                const ekleBtn = document.getElementById("duyuruEkle");
+                if(ekleBtn) ekleBtn.onclick = () => {
+                    const baslik = document.getElementById("duyuruBaslik").value;
+                    const icerik = document.getElementById("duyuruIcerik").value;
+                    if(baslik && icerik) {
+                        let duyurular = JSON.parse(localStorage.getItem("kurtulus_duyurulari") || "[]");
+                        duyurular.unshift({ id: Date.now(), baslik, icerik });
+                        localStorage.setItem("kurtulus_duyurulari", JSON.stringify(duyurular));
+                        renderDuyuruModulu();
+                        document.getElementById("duyuruBaslik").value = "";
+                        document.getElementById("duyuruIcerik").value = "";
+                    }
+                };
+            } else {
+                const panel = document.getElementById("adminDuyuruPanel");
+                if(panel) panel.style.display = "none";
+            }
+        }
+    }
+
+    function renderDuyuruModulu() {
+        let duyurular = JSON.parse(localStorage.getItem("kurtulus_duyurulari") || "[]");
+        const listeDiv = document.getElementById("duyuruListesi");
+        if(listeDiv) {
+            if(duyurular.length===0) listeDiv.innerHTML = "<p>Henüz duyuru yok. Yönetici girişi yaparak ekleyin.</p>";
+            else {
+                let html = "<ul>";
+                duyurular.forEach(d => { html += `<li><strong>${escapeHtml(d.baslik)}</strong><br/>${escapeHtml(d.icerik)}</li><hr/>`; });
+                html += "</ul>";
+                listeDiv.innerHTML = html;
+            }
+        }
+        const silListe = document.getElementById("duyuruSilListe");
+        if(silListe && adminLogged) {
+            silListe.innerHTML = "<h4>Yönetici: Duyuru Silme</h4>";
+            duyurular.forEach(d => {
+                const div = document.createElement("div");
+                div.style.margin = "8px 0";
+                div.innerHTML = `<span><strong>${escapeHtml(d.baslik)}</strong> - ${escapeHtml(d.icerik.substring(0,50))}</span> <button class="silBtn" data-id="${d.id}">Sil</button>`;
+                silListe.appendChild(div);
+            });
+            document.querySelectorAll(".silBtn").forEach(btn => {
+                btn.onclick = () => {
+                    let id = parseInt(btn.getAttribute("data-id"));
+                    let yeniListe = duyurular.filter(d => d.id !== id);
+                    localStorage.setItem("kurtulus_duyurulari", JSON.stringify(yeniListe));
+                    renderDuyuruModulu();
+                    renderContent("duyurular");
+                };
+            });
+        }
+    }
+
+    function setActiveModule(id) {
+        activeModuleId = id;
+        renderSidebar();
+        renderContent(id);
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    function updateAdminUI() {
+        renderSidebar();
+        const yeniAlan = document.getElementById("yeniModulAlan");
+        if(yeniAlan) yeniAlan.style.display = adminLogged ? "block" : "none";
+        if(activeModuleId === "duyurular") renderContent("duyurular");
+        document.getElementById("adminStatus").innerText = adminLogged ? "👑 Yönetici" : "👤 Ziyaretçi";
+        document.getElementById("adminLoginBtn").innerText = adminLogged ? "🚪 Çıkış" : "🔐 Yönetici Girişi";
+    }
+
+    document.getElementById("adminLoginBtn").onclick = () => {
+        if(adminLogged) {
+            adminLogged = false;
+            sessionStorage.removeItem("admin_logged");
+            updateAdminUI();
+        } else {
+            const pwd = prompt("Şifre:");
+            if(pwd === "kurtulus2026") {
+                adminLogged = true;
+                sessionStorage.setItem("admin_logged", "true");
+                updateAdminUI();
+            } else alert("Şifre yanlış");
+        }
+    };
+
+    document.getElementById("yeniModulKaydet").onclick = () => {
+        if(!adminLogged) return alert("Önce yönetici girişi yapın.");
+        const ad = document.getElementById("yeniModulAd").value.trim();
+        if(!ad) return alert("Modül adı girin");
+        const newId = "mod_" + Date.now();
+        modules[newId] = {
+            baslik: ad,
+            icerik: `<h1>${ad}</h1><p>Bu modülün içeriğini düzenlemek için ✏️ butonuna tıklayın. 12 madde halinde yazabilirsiniz.</p>`
+        };
+        saveModules();
+        renderSidebar();
+        setActiveModule(newId);
+        document.getElementById("yeniModulAd").value = "";
+    };
+
+    // Başlangıç
+    loadModules();
+    const storedAdmin = sessionStorage.getItem("admin_logged") === "true";
+    adminLogged = storedAdmin;
+    updateAdminUI();
+    if(Object.keys(modules).length) setActiveModule(Object.keys(modules)[0]);
+    else setActiveModule(null);
+
+    if(!localStorage.getItem("kurtulus_duyurulari")) localStorage.setItem("kurtulus_duyurulari", JSON.stringify([{ id: Date.now(), baslik: "Kurtuluş Manifestosu Yayında", icerik: "12 maddelik dönüşüm planını tüm modüllerde okuyabilir, yönetici girişiyle içerikleri düzenleyebilirsiniz." }]));
+    if(!localStorage.getItem("dayanisma_fonu")) localStorage.setItem("dayanisma_fonu", "28500");
+</script>
+</body>
+</html>
